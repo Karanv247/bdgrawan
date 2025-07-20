@@ -255,6 +255,12 @@ function logError($message) {
 function processUpdate($update) {
     if (isset($update->message)) {
         handleMessage($update->message);
+    } elseif (isset($update->callback_query)) {
+        handleCallbackQuery($update->callback_query);
+    } // Add more elseif blocks as needed for other update types.
+    else {
+        // Optional: Log unknown update type for debugging
+        // logError('Unknown update type received: ' . json_encode($update));
     }
 }
 
