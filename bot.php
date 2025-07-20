@@ -206,6 +206,57 @@ function handlePurchase($chat_id, $user_id, $plan_id) {
         . "💰 Amount: ₹{$plan['price']}\n"
         . "📅 Expiry: " . date('Y-m-d', $expiry) . "\n\n"
         . "Premium features are now unlocked!";
-    
+
+    function getUpdates($offset) {
+    $url = API_URL . "getUpdates?timeout=" . POLLING_TIMEOUT . "&offset=$offset";
+    $response = file_get_contents($url);
+    $result = json_decode($response);
+    return $result->result ?? [];
+}
+
+function sendMessage($chat_id, $text, $keyboard = null) {
+    $post = [
+        'chat_id' => $chat_id,
+        'text' => $text,
+        'parse_mode' => 'Markdown'
+    ];
+    if ($keyboard) {
+        $post['reply_markup'] = json_encode($keyboard);
+    }
+    file_get_contents(API_URL . "sendMessage?" . http_build_query($post));
+}
+
+function getUser($user_id) {
+    $users = json_decode(file_get_contents(USERS_FILE), true);
+    if (!isset($users[$user_id])) {
+        $users[$user_id] = [
+            'id' => $user_id,
+            'credits' => 0,
+            'referrals' => 0,
+            'premium' => ['active' => false]
+        ];
+        file_put_contents(USERS_FILE, json_encode($users));
+    }
+    return json_decode(json_encode($users[$user_id]));
+}
+
+function saveUser($user) {
+    $users = json_decode(file_get_contents(USERS_FILE), true);
+    $users[$user->id] = $user;
+    file_put_contents(USERS_FILE, json_encode($users));
+}
+
+function logError($message) {
+    $errors = json_decode(file_get_contents(ERROR_LOG_FILE));
+    $errors[] = ['time' => time(), 'error' => $message];
+    file_put_contents(ERROR_LOG_FILE, json_encode($errors));
+}
+
+function processUpdate($update) {
+    if (isset($update->message)) {
+        handleMessage($update->message);
+    }
+}
+
     sendMessage($chat_id, $message);
 }
