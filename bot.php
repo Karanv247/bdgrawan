@@ -25,7 +25,7 @@ if (!file_exists(COUPON_FILE)) {
 $last_update_id = 0;
 while (true) {
     try {
-        $updates = getUpdates($last_update_id);
+        $updates = getUpdates($last_update_id); /var/www/html/bot.php 
         
         foreach ($updates as $update) {
             processUpdate($update);
